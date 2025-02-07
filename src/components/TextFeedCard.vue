@@ -1,10 +1,7 @@
 <template>
-	<div class="card">
+	<a class="card">
 		<div class="card-header">
-			<img
-				class="avatar"
-				src="https://yt3.ggpht.com/AyUL9W0ltc_aJr_MysuZBx8hRfb1SIVNREgU9kiOO-lqmdhYkEsllmhagertVIwHwa3UAAKy=s88-c-k-c0x00ffffff-no-rj"
-			/>
+			<img class="avatar" :src="profilePictures[pfp]" />
 			<div class="sender">
 				<h4 class="name">{{ name }}</h4>
 				<p class="location">{{ userLocation }}</p>
@@ -14,10 +11,11 @@
 		<div class="card-body">
 			<p>{{ messagePreview }}</p>
 		</div>
-	</div>
+	</a>
 </template>
 
 <script>
+import { profilePictures } from "../data/profilePictures";
 export default {
 	props: {
 		name: String,
@@ -25,7 +23,11 @@ export default {
 		message: {
 			type: String,
 		},
+		pfp: Number,
 	},
+	data: () => ({
+		profilePictures,
+	}),
 	computed: {
 		messagePreview() {
 			return this.message.length > 110
@@ -43,7 +45,6 @@ export default {
 	border-radius: 0.5rem;
 	box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
 	overflow: hidden;
-	cursor: pointer;
 }
 
 .card-header {
@@ -73,6 +74,9 @@ export default {
 }
 
 .card-body {
+	display: flex;
+	justify-content: center;
+	align-items: center;
 	background-color: var(--purple-800);
 	background-image: linear-gradient(
 		135deg,

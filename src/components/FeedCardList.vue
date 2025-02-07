@@ -1,33 +1,42 @@
 <template>
 	<section>
 		<div
-			v-for="post in posts"
-			v-bind:key="post.id"
+			v-for="(post, i) in posts"
+			:key="post.id"
 			v-on:click="
 				() => {
 					expanded = true;
 					expandedId = post.id;
 				}
 			"
+			:style="`--delay: ${i < 20 ? i * 75 : 20 * 75}ms`"
 			class="wrapper"
 		>
 			<ImageFeedCard
-				v-if="post.src !== undefined"
-				:src="post.src"
+				v-if="post.image !== undefined"
+				:src="post.image"
+				:message="post.message"
 				:name="post.name"
-				:userLocation="post.location"
+				:location="post.location"
+				:pfp="post.pfp"
 			/>
 			<TextFeedCard
 				v-else
 				:message="post.message"
 				:name="post.name"
-				:userLocation="post.location"
+				:location="post.location"
+				:pfp="post.pfp"
 			/>
 		</div>
 	</section>
-	<ExpandedPost
-		:post="posts[expandedId]"
-		v-if="expanded"
+	<ExpandedImgPost
+		v-if="expanded && getPost(expandedId).image !== undefined"
+		:post="getPost(expandedId)"
+		@onClickOff="minimizePost"
+	/>
+	<ExpandedTextPost
+		v-else-if="expanded && getPost(expandedId).image === undefined"
+		:post="getPost(expandedId)"
 		@onClickOff="minimizePost"
 	/>
 </template>
@@ -35,46 +44,34 @@
 <script>
 import ImageFeedCard from "./ImageFeedCard.vue";
 import TextFeedCard from "./TextFeedCard.vue";
-import ExpandedPost from "./ExpandedPost.vue";
+import ExpandedImgPost from "./ExpandedImgPost.vue";
+import ExpandedTextPost from "./ExpandedTextPost.vue";
+import { apiURL } from "../config/config";
 
 export default {
 	components: {
 		ImageFeedCard,
 		TextFeedCard,
-		ExpandedPost,
+		ExpandedImgPost,
+		ExpandedTextPost,
 	},
 	data: () => ({
-		posts: [
-			{
-				name: "Shiokko 1",
-				location: "Shionstagram 1",
-				message: "Text part of the message 1.",
-			},
-			{
-				name: "Shiokko 2",
-				location: "Shionstagram 2",
-				message: "Text part of the message 2.",
-			},
-			{
-				name: "Shiokko 3",
-				location: "Shionstagram 3",
-				src: "placeholder.jpg",
-				message: "Text part of the message 3.",
-			},
-			{
-				name: "Shiokko 4",
-				location: "Shionstagram 4",
-				src: "placeholder.jpg",
-				message: "Text part of the message 4.",
-			},
-		].map((post, i) => ({ ...post, id: i })),
+		posts: [],
 		expanded: false,
 		expandedId: -1,
 	}),
+	async mounted() {
+		const res = await fetch(`${apiURL}/messages`);
+		const posts = await res.json();
+		this.posts = posts.reverse();
+	},
 	methods: {
 		minimizePost() {
 			this.expanded = false;
 			this.expandedId = -1;
+		},
+		getPost(id) {
+			return this.posts.filter((post) => post.id === id)[0];
 		},
 	},
 };
@@ -98,6 +95,22 @@ section {
 @media screen and (min-width: 1440px) {
 	section {
 		grid-template-columns: repeat(3, 1fr);
+	}
+}
+
+.wrapper {
+	opacity: 0;
+	animation: fadeUp 250ms var(--delay, 0) ease-out forwards;
+}
+
+@keyframes fadeUp {
+	0% {
+		opacity: 0;
+		transform: translateY(1rem);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
 	}
 }
 </style>
